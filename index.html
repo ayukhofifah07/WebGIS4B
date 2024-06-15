@@ -87,15 +87,24 @@
             <button type="button" class="btn btn-outline-success" title="Layers"><i class="bi bi-layers"></i></button>
             <button type="button" class="btn btn-outline-success" title="Pengukuran"><i class="bi bi-rulers"></i></button>
         </div>
-        <!-- Basemap -->
-        <div class="boxTool card col-5" id="BoxBasemap">
-          <div class="card-header" id="BoxBasemapheader">
-            Basemaps
-          </div>
-          <div class="card-body row" id="Basemaps">
-                    
-          </div>
-        </div>
+       <!-- Basemap -->
+				<div class="boxTool card col-5" id="BoxBasemap" style="display: none">
+					<!-- <div class="boxTool card col-5" id="BoxBasemap"> -->
+					<div class="card-header" id="BoxBasemapheader">Basemaps</div>
+					<div class="card-body row" id="Basemaps"></div>
+				</div>
+				<!-- Layers -->
+				<div class="boxTool card col-5" id="BoxLayer" style="display: none">
+					<div class="card-header" id="BoxLayerheader">Layers</div>
+					<div class="card-body row" id="Layer">
+						<div id="LayerTreeList"></div>
+					</div>
+				</div>
+				<!-- Pengukuran -->
+				<div class="boxTool card col-5" id="BoxPengukuran" style="display: none" >
+					<div class="card-header" id="BoxPengukuranheader">Pengukuran</div>
+					<div class="card-body row" id="Pengukuran"></div>
+				</div>
         
     </div>
 
@@ -110,14 +119,20 @@
 <script src="Lib/proj4.js"></script>
 <script src="Lib/proj4-src.js"></script>
 <script>
-// pengaturan posisi  
-document.getElementById("map").style.height = screen.height -200 + "px";
-document.getElementById("MenuMap").style.left = screen.width/2 - 100 + "px";
-document.getElementById("BoxBasemap").style.left = screen.width/2 - 300 + "px";
-document.getElementById("BoxBasemap").style.top = screen.height/2 -200 + "px";
+// pengaturan posisi
+			document.getElementById("map").style.height = screen.height - 200 + "px";
+			document.getElementById("MenuMap").style.left = screen.width / 2 - 100 + "px";
+			document.getElementById("BoxBasemap").style.left = screen.width / 2 - 300 + "px";
+			document.getElementById("BoxBasemap").style.top = screen.height / 2 - 200 + "px";
+			document.getElementById("BoxLayer").style.left = screen.width / 2 - 300 + "px";
+			document.getElementById("BoxLayer").style.top = screen.height / 2 - 200 + "px";
+			document.getElementById("BoxPengukuran").style.left = screen.width / 2 - 300 + "px";
+			document.getElementById("BoxPengukuran").style.top = screen.height / 2 - 200 + "px";
 
-//mengaktifkan mode move
-dragElement(document.getElementById("BoxBasemap"));
+			// mengaktifkan mode move
+			dragElement(document.getElementById("BoxBasemap"));
+			dragElement(document.getElementById("BoxLayer"));
+			dragElement(document.getElementById("BoxPengukuran"));
 
 //global variabel
 var Basemap;
@@ -192,32 +207,133 @@ var map = new ol.Map({
 //code di susun oleh Hidayatul Rahman, M.Kom
 //=====================================================================
 
+//-------LOad Layernme Tree Layer-----------
+function LoadTreLayerList(){	
+  var n=0;		
+  var lyrTreL="";
+  $('#LayerTreeList').html()	
+	map.getLayers().forEach(function(layer) {
+	if(layer.get('name')){
+	 var lgd = layer.get('LegenUrl');
+		 if(lgd){
+			 if(layer.get('legentype') == 'ESRI'){
+			 var ListLegenTree = '<li class="list-group-item list-group-item" id="layer'+n+'_LI"  onClick="resizeIframe('+n+')"><div class="btn-group dropright btn-block" draggable="true"><button type="button" class="btn btn-sm"><input id="layer'+n+'_vsb" class="visible" type="checkbox"> </button><button type="button" id="layer'+n+'_NM" class="btn btn-sm btn-block" style="text-align:left;">'+layer.get('name')+'</button><button type="button" class="btn btn-sm dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button><div class="dropdown-menu"><a class="dropdown-item" href="#"><label class="checkbox text-info" for="layer'+n+'popup"><i class="far fa-comment-alt"></i> Popup <input id="layer'+n+'popup" class="popup" type="checkbox"/ checked></label></a><a class="dropdown-item" href="#"><label class="text-warning"> <i class="fa fa-adjust" aria-hidden="true"></i> Opacity <input class="opacity" id="layer'+n+'_opc" type="range" min="0" max="1" step="0.01"/></label></a><a class="dropdown-item" href="#" id="layer'+n+'_zm"><i class="fa fa-search-plus"></i> Zoom to Layer</a><div class="dropdown-divider"></div><a class="dropdown-item text-danger" href="#" id="layer'+n+'_rmv"><i class="fa fa-trash"></i> Remove</a><a class="dropdown-item text-success" href="'+layer.get('metadata')+'" target="_blank"><i class="fa fa-info-circle"></i> Metadata</a></div></div> <fieldset id="layer'+n+'_FS"><iframe id="layer'+n+'_LGN" class="style-5" width="300px"  src="/WebPortal/App/Esri_legenda.php?url='+lgd+'" style="border:none;"></iframe></fieldset></li>';
+			 }else {
+			var ListLegenTree = '<li class="list-group-item list-group-item" id="layer'+n+'_LI" ><div class="btn-group dropright btn-block" draggable="true"><button type="button" class="btn btn-sm"><input id="layer'+n+'_vsb" class="visible" type="checkbox"> </button><button type="button" id="layer'+n+'_NM" class="btn btn-sm btn-block" style="text-align:left;">'+layer.get('name')+'</button><button type="button" class="btn btn-sm dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button><div class="dropdown-menu"><a class="dropdown-item" href="#"><label class="checkbox text-info" for="layer'+n+'popup"><i class="far fa-comment-alt"></i> Popup <input id="layer'+n+'popup" class="popup" type="checkbox"/ checked></label></a><a class="dropdown-item" href="#"><label class="text-warning"> <i class="fa fa-adjust" aria-hidden="true"></i> Opacity <input class="opacity" id="layer'+n+'_opc" type="range" min="0" max="1" step="0.01"/></label></a><a class="dropdown-item" href="#" id="layer'+n+'_zm"><i class="fa fa-search-plus"></i> Zoom to Layer</a><div class="dropdown-divider"></div><a class="dropdown-item text-danger" href="#" id="layer'+n+'_rmv"><i class="fa fa-trash"></i> Remove</a><a class="dropdown-item text-success" href="https://geoservice.kalselprov.go.id/ServisDerektory/?IdSearch='+layer.get('metadata')+'" target="_blank"><i class="fa fa-info-circle"></i> Metadata</a></div></div> <fieldset id="layer'+n+'_FS"><img src="'+lgd+'"></fieldset></li>';	
+			 }
+		 }else{
+			var ListLegenTree = '<li class="list-group-item list-group-item" id="layer'+n+'_LI" ><div class="btn-group dropright btn-block" draggable="true"><button type="button" class="btn btn-sm"><input id="layer'+n+'_vsb" class="visible" type="checkbox"> </button><button type="button" id="layer'+n+'_NM" class="btn btn-sm btn-block" style="text-align:left;">'+layer.get('name')+'</button><button type="button" class="btn btn-sm dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button><div class="dropdown-menu"><a class="dropdown-item" href="#"><label class="checkbox text-info" for="layer'+n+'popup"><i class="far fa-comment-alt"></i> Popup <input id="layer'+n+'popup" class="popup" type="checkbox"/ checked></label></a><a class="dropdown-item" href="#"><label class="text-warning"> <i class="fa fa-adjust" aria-hidden="true"></i> Opacity <input class="opacity" id="layer'+n+'_opc" type="range" min="0" max="1" step="0.01"/></label></a><a class="dropdown-item" href="#" id="layer'+n+'_zm"><i class="fa fa-search-plus"></i> Zoom to Layer</a><div class="dropdown-divider"></div><a class="dropdown-item text-danger" href="#" id="layer'+n+'_rmv"><i class="fa fa-trash"></i> Remove</a><a class="dropdown-item text-success" href="https://geoservice.kalselprov.go.id/ServisDerektory/?IdSearch='+layer.get('metadata')+'" target="_blank"><i class="fa fa-info-circle"></i> Metadata</a></div></div> <fieldset id="layer'+n+'_FS">-</li>';	
+		 }
+		lyrTreL = ListLegenTree+lyrTreL;
+		n++;
+		}
+	 });
+	 
+	 $('#LayerTreeList').html(lyrTreL)
+};
 
-Poin2= new ol.style.Style({
-	image: new ol.style.Icon({
-	  size: [50, 60],
-	  opacity: 1,
-	  scale: 0.90,
-	  src: 'Simbol/icon/marker17.png'
-	})
-});
 
-function AddPointFitureublik(){
-var px1 = eval(document.getElementById("TxtX").value); // input sumber X
-var py1 = eval(document.getElementById("TxtY").value); // input sumber Y
-var layerPB = new ol.layer.Vector({
-			source: new ol.source.Vector({
-				features: [
-					new ol.Feature({
-						geometry: new ol.geom.Point(ol.proj.fromLonLat([px1,py1]))
-					})
-				]
-			}),
-		style: Poin2,
-		MapType :'Feature',
-		name:  document.getElementById("NmObj").value,
-	});
-	map.addLayer(layerPB);
+//membuat HTML list tree
+ LoadTreLayerList();
+
+//====================FUNGSI TREE LAYER MENU==================
+	function bindInputs(layerid, layer) {
+	
+	  var visibilityInput = $(layerid + '_vsb');
+	  visibilityInput.on('change', function () {
+		layer.setVisible(this.checked);
+	  });
+	  	  
+	  visibilityInput.prop('checked', layer.getVisible());
+	  var opacityInput = $(layerid + '_opc');
+	  opacityInput.on('input', function () {
+		layer.setOpacity(parseFloat(this.value));
+	  });
+	  opacityInput.val(String(layer.getOpacity()));
+	  
+	  var LgndInput = $(layerid + '_NM');
+	  var LgndDIV = $(layerid + '_FS');
+	  LgndDIV.hide();
+	  	LgndInput.on('click', function () {
+			  LgndDIV.show();
+	   });
+	   LgndInput.on('dblclick', function () {
+			  LgndDIV.hide();
+	   });
+	  //------------REMOVE LAYER--------------------
+	   var CmdRemoveLayer = $(layerid + '_rmv');	   
+	   CmdRemoveLayer.on('click', function () {
+			map.removeLayer(layer);
+			var LayrLI = $(layerid + '_LI');
+			LayrLI.remove();
+	   });
+	   //-----------MOVE Z Index LAYER--------------------
+	var ZIdx = eval(layer.getZIndex());
+				layer.setZIndex(ZIdx);
+				ZIdx++;
+		//------ ZOOM TO EXTEND LAYER---------------
+		var CmdMenuZoomLyr = $(layerid + '_zm');	   
+	      CmdMenuZoomLyr.on('click', function () {			  
+		   //map.getView().fit(layer.getExtent());
+		   var extent = layer.getExtent();
+			map.getView().fit(extent);		   		   
+	   });
+	   //------POPUP LAYER---------------
+		var Elmpopup = $(layerid + 'popup');
+	  	Elmpopup.on('change', function () {
+		 layer.set('InfoPopup', this.checked);
+	  });
+	  	  
+//		//--------- MOVE UP LAYER-------------------
+//		var CmdMenuUpLyr = $(layerid + '_Mup');	   
+//	      CmdMenuUpLyr.on('click', function () {			  
+//		   layer.setZIndex(eval(layer.getZIndex())+1);
+//	   });
+//	   //--------- MOVE DOWN LAYER-------------------
+//		var CmdMenuDownLyr = $(layerid + 'Mdown');	   
+//	      CmdMenuDownLyr.on('click', function () {			  
+//		   layer.setZIndex(eval(layer.getZIndex())-1);
+//	   });
+	   
+}
+
+//===  FUNGSI LOAD DATA LAYER =====	
+function setup(id, group) {
+    group.getLayers().forEach(function (layer, i) {
+    var layerid = id + i;
+    bindInputs(layerid, layer);
+    if (layer instanceof ol.layer.Group) {
+        setup(layerid, layer);
+    }
+    });
+}
+//=== MEMANGGIL FUNGSI LOAD DATA LAYER ====
+setup('#layer', map.getLayerGroup());
+
+// == FUNGSI MEDEFINASI LAYER INDEX PADA LIST GROUP
+$('#layertree li').mouseenter(function() {
+        ListLayerIndex = $(this).index();
+    //alert(ListLayerIndex);		
+})
+
+//=== FUNGSI DRAG DROP LAYER POSISI ====
+function pindahZLayer(s,LyNm){
+  var Tly = eval(document.querySelectorAll("#layertree li").length) - ListLayerIndex;
+ // var Ly= 'layer'+(Tly-1)+'_NM';
+ // alert(" dari posis :"+ListLayerIndex+ " ke pos : "+s);
+ //alert(document.getElementById(Ly).innerHTML);
+  if(ListLayerIndex >s ){
+		var Posisi = (eval(document.querySelectorAll("#layertree li").length)-1) + eval(s); 
+	}else{
+		var Posisi = (eval(document.querySelectorAll("#layertree li").length) -1)- eval(s);  
+	}
+	var p= document.getElementById(LyNm).id;
+	var Ly = p.replaceAll('_LI', '_NM');
+   map.getLayers().forEach(function(layer) {
+	   if(layer.get('name') == document.getElementById(Ly).innerHTML){
+		   layer.setZIndex(Posisi);
+		  }
+   });
 }
 //=====================================================================
 // memelukan dukungan file javascrip conversi koordinat  proj4.js dan proj4-src.js
@@ -300,6 +416,57 @@ function LoadBasemap(){
 };
 LoadBasemap();
 </script>
+
+<script>
+			const _ = document.getElementById("LayerTreeList"),
+				toggle = document.querySelectorAll(".dropdown-toggle"),
+				dropdown = document.querySelectorAll(".dropdown-menu");
+			toggle.forEach((each) =>
+				each.addEventListener("click", () => toggleDropdown(each))
+			);
+			function toggleDropdown(toggle) {
+				dropdown.forEach((each) => {
+					if (toggle.nextElementSibling == each) {
+						if ($(each).css("display") == "none") {
+							$(each).css("display", "block");
+						} else {
+							$(each).css("display", "none");
+						}
+					} else {
+						$(each).css("display", "none");
+					}
+				});
+			}
+
+			const buttons = document.querySelectorAll("#MenuMap button"),
+				boxes = document.querySelectorAll(".boxTool.card");
+			buttons.forEach((button) => {
+				localStorage.getItem("active") == null &&
+					localStorage.setItem("active", "Basemap");
+				if ($(button).attr("title") == localStorage.getItem("active")) {
+					$(`#Box${$(button).attr("title")}`).css("display", "flex");
+					$(button).attr("title") == localStorage.getItem("active") &&
+						$(button).addClass("active");
+				}
+				button.addEventListener("click", () =>
+					toggleBox($(button).attr("title"))
+				);
+			});
+			function toggleBox(title) {
+				boxes.forEach((box) => {
+					const target = `[title="${box.id.substring(3, box.id.length)}"]`;
+					if (box.id == `Box${title}`) {
+						if ($(box).css("display") == "none") {
+							$(box).show(1000), $(target).addClass("active"), localStorage.setItem("active", title);
+						} else {
+							$(box).hide(1000), $(target).removeClass("active");
+						}
+					} else {
+						$(box).hide(1000), $(target).removeClass("active");
+					}
+				});
+			}
+		</script>
 
   <!-- Vendor JS Files -->
   <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
